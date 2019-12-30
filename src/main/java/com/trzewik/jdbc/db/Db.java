@@ -1,33 +1,67 @@
 package com.trzewik.jdbc.db;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
-class Db implements AutoCloseable {
-    Connection connection;
+import java.util.List;
 
-    Db(DbProperties properties) throws SQLException {
-        connection = DriverManager.getConnection(
-            properties.getUrl(),
-            properties.getUsername(),
-            properties.getPassword());
+class Db<T> {
+    private SessionFactory sessionFactory;
+    private Session session;
+    private Transaction transaction;
+
+    Db(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
-    ResultSet executeQuery(String query) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(query);
-        return statement.executeQuery();
+    T get(long id, Class<T> tClass) {
+        openSession();
+        T t = session.get(tClass, id);
+        closeSession();
+        return t;
     }
 
-    void executeUpdate(String updateQuery) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(updateQuery);
-        statement.executeUpdate();
+    List<T> getAll(String query, Class<T> tClass) {
+        openSession();
+        List<T> list = session.createQuery(query, tClass).getResultList();
+        closeSession();
+        return list;
     }
 
-    @Override
-    public void close() throws Exception {
-        connection.close();
+    void save(T toSave) {
+        openSessionWithTransaction();
+        session.save(toSave);
+        closeSessionWithTransaction();
+    }
+
+    void update(T updated) {
+        openSessionWithTransaction();
+        session.update(updated);
+        closeSessionWithTransaction();
+    }
+
+    void delete(T toDelete) {
+        openSessionWithTransaction();
+        session.delete(toDelete);
+        closeSessionWithTransaction();
+    }
+
+    private void openSession() {
+        session = sessionFactory.openSession();
+    }
+
+    private void openSessionWithTransaction() {
+        session = sessionFactory.openSession();
+        transaction = session.beginTransaction();
+    }
+
+    private void closeSession() {
+        session.close();
+    }
+
+    private void closeSessionWithTransaction() {
+        transaction.commit();
+        session.close();
     }
 }

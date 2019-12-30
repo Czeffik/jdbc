@@ -3,23 +3,32 @@ package com.trzewik.jdbc.db;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+@Setter
 @Getter
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 @ToString
+@Entity
+@Table(name = "account")
 public class Account {
-    private final long userId;
-    private final String username;
-    private final String email;
-
-    Account(ResultSet rs) throws SQLException {
-        this.userId = rs.getLong("user_id");
-        this.username = rs.getString("username");
-        this.email = rs.getString("email");
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
+    private long userId;
+    @Column(name = "username")
+    private String username;
+    @Column(name = "email")
+    private String email;
 }

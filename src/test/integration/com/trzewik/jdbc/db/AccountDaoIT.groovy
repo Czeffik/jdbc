@@ -83,16 +83,16 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
         given:
         def account = createAccount()
         def userId = dbHelper.insert(account).first().first()
-        account = createAccount(userId, account)
 
         and:
         def updatedAccount = createAccount(new AccountBuilder(
+            userId: userId,
             username: 'NEW USERNAME',
             email: 'NEW EMAIL'
         ))
 
         when:
-        dao.update(account, updatedAccount)
+        dao.update(updatedAccount)
 
         then:
         def afterUpdateAccount = dbHelper.getAccountByUserId(userId)
