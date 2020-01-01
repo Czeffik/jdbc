@@ -1,6 +1,6 @@
 package com.trzewik.jdbc.db
 
-
+import org.hibernate.HibernateException
 import spock.lang.Shared
 import spock.lang.Subject
 
@@ -119,5 +119,46 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
 
         cleanup:
         dbHelper.deleteAccountsByIds([userId])
+    }
+
+    def 'should rollback when transaction fail - unique constraint violate'() {
+        given:
+        def first = createAccount()
+        def second = createAccount()
+
+        when:
+        (dao as AccountDao).saveMany([first, second])
+
+        then:
+        thrown(HibernateException)
+
+        and:
+        dbHelper.allAccounts.size() == 0
+    }
+
+    def 'should save accounts in transaction successfully'() {
+        given:
+        def first = createAccount()
+        def second = createAccount(new AccountBuilder(
+            username: 'Other',
+            email: 'some.email@o2.pl'
+        ))
+
+        when:
+        (dao as AccountDao).saveMany([first, second])
+
+        then:
+        dbHelper.allAccounts.size() == 2
+
+        cleanup:
+        dbHelper.deleteAccounts()
+    }
+
+    def 'should do nothing when accounts are empty list'() {
+        when:
+        (dao as AccountDao).saveMany([])
+
+        then:
+        dbHelper.allAccounts.size() == 0
     }
 }

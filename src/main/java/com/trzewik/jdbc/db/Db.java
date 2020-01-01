@@ -35,6 +35,15 @@ class Db<T> {
         closeSessionWithTransaction();
     }
 
+    void saveMany(List<T> listToSave) {
+        openSessionWithTransaction();
+        try {
+            listToSave.forEach(toSave -> session.save(toSave));
+        } finally {
+            closeSessionWithTransaction();
+        }
+    }
+
     void update(T updated) {
         openSessionWithTransaction();
         session.update(updated);

@@ -1,6 +1,7 @@
 package com.trzewik.jdbc.db;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,17 +21,21 @@ class AccountDao implements Dao<Account> {
     }
 
     @Override
-    public void save(Account account) {
+    public void save(@NonNull Account account) {
         db.save(account);
     }
 
     @Override
-    public void update(Account updated) {
+    public void update(@NonNull Account updated) {
         db.update(updated);
     }
 
     @Override
-    public void delete(Account account) {
+    public void delete(@NonNull Account account) {
         db.delete(account);
+    }
+
+    void saveMany(@NonNull List<Account> accounts) {
+        db.saveMany(accounts);
     }
 }

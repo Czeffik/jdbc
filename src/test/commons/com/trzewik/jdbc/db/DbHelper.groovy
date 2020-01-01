@@ -53,4 +53,8 @@ class DbHelper {
             sql.execute("DELETE FROM ${defaultSchema}.account WHERE user_id = ${it}".toString())
         }
     }
+
+    void deleteAccounts() {
+        sql.execute("DELETE FROM ${defaultSchema}.account".toString())
+    }
 }
