@@ -3,6 +3,9 @@ package com.trzewik.jdbc.db
 
 import spock.lang.Shared
 import spock.lang.Subject
+import spock.lang.Unroll
+
+import java.sql.SQLException
 
 class AccountDaoIT extends DbSpec implements AccountCreator {
     @Shared
@@ -83,16 +86,16 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
         given:
         def account = createAccount()
         def userId = dbHelper.insert(account).first().first()
-        account = createAccount(userId, account)
 
         and:
         def updatedAccount = createAccount(new AccountBuilder(
+            userId: userId,
             username: 'NEW USERNAME',
             email: 'NEW EMAIL'
         ))
 
         when:
-        dao.update(account, updatedAccount)
+        dao.update(updatedAccount)
 
         then:
         def afterUpdateAccount = dbHelper.getAccountByUserId(userId)
@@ -119,5 +122,59 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
 
         cleanup:
         dbHelper.deleteAccountsByIds([userId])
+    }
+
+    def 'should rollback when transaction fail - unique constraint violate'() {
+        given:
+        def first = createAccount()
+        def second = createAccount()
+
+        when:
+        (dao as AccountDao).saveMany([first, second])
+
+        then:
+        thrown(SQLException)
+
+        and:
+        dbHelper.allAccounts.size() == 0
+
+        when:
+        dao.save(first)
+
+        then:
+        dbHelper.allAccounts.size() == 1
+
+        cleanup:
+        dbHelper.deleteAccounts()
+    }
+
+    def 'should save accounts in transaction successfully'() {
+        given:
+        def first = createAccount()
+        def second = createAccount(new AccountBuilder(
+            username: 'Other',
+            email: 'some.email@o2.pl'
+        ))
+
+        when:
+        (dao as AccountDao).saveMany([first, second])
+
+        then:
+        dbHelper.allAccounts.size() == 2
+
+        cleanup:
+        dbHelper.deleteAccounts()
+    }
+
+    @Unroll
+    def 'should do nothing when accounts are: #ACCOUNTS'() {
+        when:
+        (dao as AccountDao).saveMany(ACCOUNTS)
+
+        then:
+        dbHelper.allAccounts.size() == 0
+
+        where:
+        ACCOUNTS << [null, []]
     }
 }
