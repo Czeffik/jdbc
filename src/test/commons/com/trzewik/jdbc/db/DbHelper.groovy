@@ -48,7 +48,7 @@ class DbHelper {
 
     void deleteAccounts(List<Account> accounts) {
         List<Long> userIds = []
-        accounts.each {userIds.addAll(getAccounts(it).user_id)}
+        accounts.each { userIds.addAll(getAccounts(it).user_id) }
         userIds.each {
             sql.execute("DELETE FROM ${defaultSchema}.account WHERE user_id = ${it}".toString())
         }
