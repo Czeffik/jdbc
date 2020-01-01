@@ -1,6 +1,7 @@
 package com.trzewik.jdbc.db;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,22 +35,35 @@ class AccountDao implements Dao<Account> {
     }
 
     @Override
-    public void save(Account account) throws SQLException {
+    public void save(@NonNull Account account) throws SQLException {
         String insert = String.format("INSERT INTO %s.account (username, email) VALUES ('%s', '%s')",
             DEFAULT_SCHEMA, account.getUsername(), account.getEmail());
         db.executeUpdate(insert);
     }
 
     @Override
-    public void update(Account account, Account updated) throws SQLException {
+    public void update(@NonNull Account updated) throws SQLException {
         String update = String.format("UPDATE %s.account SET username = '%s', email = '%s' WHERE user_id = %s",
-            DEFAULT_SCHEMA, updated.getUsername(), updated.getEmail(), account.getUserId());
+            DEFAULT_SCHEMA, updated.getUsername(), updated.getEmail(), updated.getUserId());
         db.executeUpdate(update);
     }
 
     @Override
-    public void delete(Account account) throws SQLException {
+    public void delete(@NonNull Account account) throws SQLException {
         String delete = String.format("DELETE FROM %s.account where user_id = %s", DEFAULT_SCHEMA, account.getUserId());
         db.executeUpdate(delete);
+    }
+
+    void saveMany(List<Account> accounts) throws SQLException {
+        db.startTransaction();
+        try {
+            if (accounts != null && accounts.size() > 0) {
+                for (Account account : accounts) {
+                    save(account);
+                }
+            }
+        } finally {
+            db.endTransaction();
+        }
     }
 }

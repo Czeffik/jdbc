@@ -13,7 +13,7 @@ public interface Dao<T> {
 
     void save(T toSave) throws SQLException;
 
-    void update(T toUpdate, T updated) throws SQLException;
+    void update(T updated) throws SQLException;
 
     void delete(T toDelete) throws SQLException;
 }
