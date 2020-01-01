@@ -4,10 +4,8 @@ import com.trzewik.jdbc.db.Account;
 import com.trzewik.jdbc.db.Dao;
 import com.trzewik.jdbc.db.DbFactory;
 
-import java.sql.SQLException;
-
 public class App {
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         Dao<Account> dao = DbFactory.accountDao();
     }
 }

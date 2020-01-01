@@ -1,11 +1,8 @@
 package com.trzewik.jdbc.db
 
-
+import org.hibernate.HibernateException
 import spock.lang.Shared
 import spock.lang.Subject
-import spock.lang.Unroll
-
-import java.sql.SQLException
 
 class AccountDaoIT extends DbSpec implements AccountCreator {
     @Shared
@@ -133,19 +130,10 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
         (dao as AccountDao).saveMany([first, second])
 
         then:
-        thrown(SQLException)
+        thrown(HibernateException)
 
         and:
         dbHelper.allAccounts.size() == 0
-
-        when:
-        dao.save(first)
-
-        then:
-        dbHelper.allAccounts.size() == 1
-
-        cleanup:
-        dbHelper.deleteAccounts()
     }
 
     def 'should save accounts in transaction successfully'() {
@@ -166,15 +154,11 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
         dbHelper.deleteAccounts()
     }
 
-    @Unroll
-    def 'should do nothing when accounts are: #ACCOUNTS'() {
+    def 'should do nothing when accounts are empty list'() {
         when:
-        (dao as AccountDao).saveMany(ACCOUNTS)
+        (dao as AccountDao).saveMany([])
 
         then:
         dbHelper.allAccounts.size() == 0
-
-        where:
-        ACCOUNTS << [null, []]
     }
 }

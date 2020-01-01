@@ -7,6 +7,7 @@ buildscript {
         }
         lombokVersion = '1.18.10'
         postgresVersion = '42.2.9'
+        hibernateVersion = '5.4.10.Final'
         repositories (repos)
     }
 }
@@ -32,6 +33,7 @@ repositories (repos)
 
 dependencies {
     compile "org.postgresql:postgresql:${postgresVersion}"
+    compile "org.hibernate:hibernate-core:${hibernateVersion}"
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }
