@@ -45,6 +45,7 @@ public class AccountController {
             case EXIT:
                 printer.printMessage("Stop controller");
                 System.exit(0);
+                break;
             default:
                 throw new IllegalArgumentException("Unsupported Action!");
         }

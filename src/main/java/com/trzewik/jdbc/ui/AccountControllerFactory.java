@@ -11,4 +11,8 @@ public class AccountControllerFactory {
     public static AccountController create(InputProvider provider, Printer printer) throws SQLException {
         return new AccountController(AccountServiceFactory.create(), provider, printer);
     }
+
+    public static AccountController createWithInMemory(InputProvider provider, Printer printer) throws SQLException {
+        return new AccountController(AccountServiceFactory.createWithInmemory(), provider, printer);
+    }
 }

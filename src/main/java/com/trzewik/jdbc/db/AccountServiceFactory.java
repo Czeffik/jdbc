@@ -10,4 +10,8 @@ public class AccountServiceFactory {
     public static AccountService create() throws SQLException {
         return new AccountServiceImpl(DbFactory.accountDao());
     }
+
+    public static AccountService createWithInmemory() throws SQLException {
+        return new AccountServiceImpl(DbFactory.inMemoryAccountDao());
+    }
 }

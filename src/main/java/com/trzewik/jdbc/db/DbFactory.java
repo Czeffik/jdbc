@@ -4,6 +4,10 @@ import java.sql.SQLException;
 
 public class DbFactory {
 
+    public static Dao<Account> inMemoryAccountDao() throws SQLException {
+        return new InMemoryAccountDao();
+    }
+
     public static Dao<Account> accountDao() throws SQLException {
         return new AccountDao(db());
     }
