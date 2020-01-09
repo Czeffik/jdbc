@@ -7,13 +7,15 @@ import java.util.Optional;
 public interface Dao<T> {
     String DEFAULT_SCHEMA = System.getProperty("db.schema", "test_db");
 
-    Optional<T> get(long id) throws SQLException;
+    Optional<T> findById(long id) throws SQLException;
 
-    List<T> getAll() throws SQLException;
+    List<T> findAll() throws SQLException;
 
     void save(T toSave) throws SQLException;
 
     void update(T updated) throws SQLException;
 
     void delete(T toDelete) throws SQLException;
+
+    void saveMany(List<Account> accounts) throws SQLException;
 }

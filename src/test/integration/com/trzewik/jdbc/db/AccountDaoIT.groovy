@@ -1,13 +1,11 @@
 package com.trzewik.jdbc.db
 
-
 import spock.lang.Shared
 import spock.lang.Subject
-import spock.lang.Unroll
 
 import java.sql.SQLException
 
-class AccountDaoIT extends DbSpec implements AccountCreator {
+class AccountDaoIT extends DbSpec implements AccountCreation {
     @Shared
     DbHelper dbHelper
     @Subject
@@ -19,76 +17,82 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
 
     def setup() {
         dao = DbFactory.accountDao()
+        dbHelper.dbCleanup()
     }
 
+    def cleanup() {
+        dbHelper.dbCleanup()
+    }
 
     def 'should get all accounts from db'() {
-        expect:
-        dao.getAll().size() == 0
+        given:
+        Account account = createAccount()
 
         when:
-        def row = dbHelper.insert(createAccount()).first()
+        def row = dbHelper.save(account)
 
         then:
-        dao.getAll().size() == 1
+        List<Account> accounts = dao.findAll()
+        accounts.size() == 1
 
-        cleanup:
-        dbHelper.deleteAccountsByIds([row.first()])
+        and:
+        with(accounts.first()) {
+            userId == getInsertedRowId(row)
+            username == account.username
+            email == account.email
+        }
     }
 
     def 'should get account by user_id'() {
         given:
         def account = createAccount()
-        def userId = dbHelper.insert(account).first().first()
-        account = createAccount(userId, account)
+        def insertedRows = dbHelper.save(account)
+        def userId = getInsertedRowId(insertedRows)
 
         expect:
-        dao.get(account.userId).get() == account
+        def found = dao.findById(userId)
+        found.isPresent()
 
-        cleanup:
-        dbHelper.deleteAccountsByIds([account.userId])
+        and:
+        with(found.get()) {
+            username == account.username
+            email == account.email
+        }
     }
 
-    def 'should return null when can not find account with user_id'() {
-        given:
-        dbHelper.deleteAccountsByIds([4])
+    def 'should return empty optional when can not find account with user_id'() {
+        when:
+        def found = dao.findById(4)
 
-        expect:
-//        dao.get(4).empty      //TODO have no idea why doesn't work when running gradle build
-        !dao.get(4).present
+        then:
+        !found.present
     }
 
     def 'should save new account in db'() {
         given:
-        def account = createAccount(new AccountBuilder(
-            username: 'New user',
-            email: 'new.email@o2.pl'
-        ))
+        def account = createAccount()
 
         when:
         dao.save(account)
 
         then:
-        def accountsAfter = dbHelper.allAccounts
-        accountsAfter.size() == 1
+        def accounts = dbHelper.allAccounts
+        accounts.size() == 1
 
         and:
-        with(accountsAfter.first()) {
+        with(accounts.first()) {
             username == account.username
             email == account.email
         }
-
-        cleanup:
-        dbHelper.deleteAccounts([account])
     }
 
     def 'should update existing account'() {
         given:
         def account = createAccount()
-        def userId = dbHelper.insert(account).first().first()
+        def userId = getInsertedRowId(dbHelper.save(account))
 
         and:
-        def updatedAccount = createAccount(new AccountBuilder(
+        def updatedAccount = createAccount(new AccountCreator(
             userId: userId,
             username: 'NEW USERNAME',
             email: 'NEW EMAIL'
@@ -98,83 +102,85 @@ class AccountDaoIT extends DbSpec implements AccountCreator {
         dao.update(updatedAccount)
 
         then:
-        def afterUpdateAccount = dbHelper.getAccountByUserId(userId)
-        with(afterUpdateAccount) {
+        def accounts = dbHelper.getAllAccounts()
+        accounts.size() == 1
+
+        and:
+        with(accounts.first()) {
             username == updatedAccount.username
             email == updatedAccount.email
         }
-
-        cleanup:
-        dbHelper.deleteAccountsByIds([userId])
     }
 
     def 'should delete account'() {
         given:
         def account = createAccount()
-        def userId = dbHelper.insert(account).first().first()
-        account = createAccount(userId, account)
+        def userId = getInsertedRowId(dbHelper.save(account))
+        account = createAccount(new AccountCreator(userId, account))
 
         when:
         dao.delete(account)
 
         then:
-        dbHelper.allAccounts.size() == 0
-
-        cleanup:
-        dbHelper.deleteAccountsByIds([userId])
+        dbHelper.allAccounts.isEmpty()
     }
 
-    def 'should rollback when transaction fail - unique constraint violate'() {
+    def 'should rollback when transaction fail - unique constraint violate when two users have same email address'() {
         given:
         def first = createAccount()
         def second = createAccount()
 
         when:
-        (dao as AccountDao).saveMany([first, second])
+        dao.saveMany([first, second])
 
         then:
         thrown(SQLException)
 
         and:
-        dbHelper.allAccounts.size() == 0
+        dbHelper.allAccounts.isEmpty()
 
         when:
         dao.save(first)
 
         then:
         dbHelper.allAccounts.size() == 1
-
-        cleanup:
-        dbHelper.deleteAccounts()
     }
 
     def 'should save accounts in transaction successfully'() {
         given:
         def first = createAccount()
-        def second = createAccount(new AccountBuilder(
+        def second = createAccount(new AccountCreator(
             username: 'Other',
             email: 'some.email@o2.pl'
         ))
 
         when:
-        (dao as AccountDao).saveMany([first, second])
+        dao.saveMany([first, second])
 
         then:
         dbHelper.allAccounts.size() == 2
-
-        cleanup:
-        dbHelper.deleteAccounts()
     }
 
-    @Unroll
-    def 'should do nothing when accounts are: #ACCOUNTS'() {
+    def 'should do nothing when accounts are empty list'() {
         when:
-        (dao as AccountDao).saveMany(ACCOUNTS)
+        dao.saveMany([])
 
         then:
-        dbHelper.allAccounts.size() == 0
+        dbHelper.allAccounts.isEmpty()
+    }
 
-        where:
-        ACCOUNTS << [null, []]
+    def 'should throw exception when accounts are null'() {
+        when:
+        dao.saveMany(null)
+
+        then:
+        thrown(NullPointerException)
+
+        and:
+        dbHelper.allAccounts.isEmpty()
+    }
+
+    long getInsertedRowId(List<List<Object>> rows, int rowNumber = 0) {
+        return rows.get(rowNumber).first() as long
     }
 }
