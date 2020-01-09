@@ -16,6 +16,10 @@ class Db implements AutoCloseable {
             properties.getPassword());
     }
 
+    PreparedStatement preparedStatement(String query) throws SQLException {
+        return connection.prepareStatement(query);
+    }
+
     void startTransaction() throws SQLException {
         connection.setAutoCommit(false);
     }
@@ -25,13 +29,11 @@ class Db implements AutoCloseable {
         connection.setAutoCommit(true);
     }
 
-    ResultSet executeQuery(String query) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(query);
+    ResultSet executeQuery(PreparedStatement statement) throws SQLException {
         return statement.executeQuery();
     }
 
-    void executeUpdate(String updateQuery) throws SQLException {
-        PreparedStatement statement = connection.prepareStatement(updateQuery);
+    void executeUpdate(PreparedStatement statement) throws SQLException {
         statement.executeUpdate();
     }
 

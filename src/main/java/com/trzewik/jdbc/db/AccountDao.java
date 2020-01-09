@@ -3,6 +3,7 @@ package com.trzewik.jdbc.db;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,19 +15,24 @@ class AccountDao implements Dao<Account> {
     private final Db db;
 
     @Override
-    public Optional<Account> get(long id) throws SQLException {
-        String select = String.format("SELECT * FROM %s.account WHERE user_id = %s", DEFAULT_SCHEMA, id);
-        ResultSet rs = db.executeQuery(select);
+    public Optional<Account> findById(long id) throws SQLException {
+        String query = String.format("SELECT * FROM %s.account WHERE user_id = ?", DEFAULT_SCHEMA);
+
+        PreparedStatement statement = db.preparedStatement(query);
+        statement.setLong(1, id);
+        ResultSet rs = db.executeQuery(statement);
 
         return Optional.ofNullable(rs.next() ? new Account(rs) : null);
     }
 
     @Override
-    public List<Account> getAll() throws SQLException {
-        String selectAll = String.format("SELECT * FROM %s.account", DEFAULT_SCHEMA);
-        ResultSet rs = db.executeQuery(selectAll);
-        List<Account> accounts = new ArrayList<>();
+    public List<Account> findAll() throws SQLException {
+        String query = String.format("SELECT * FROM %s.account", DEFAULT_SCHEMA);
 
+        PreparedStatement statement = db.preparedStatement(query);
+        ResultSet rs = db.executeQuery(statement);
+
+        List<Account> accounts = new ArrayList<>();
         while (rs.next()) {
             accounts.add(new Account(rs));
         }
@@ -36,34 +42,47 @@ class AccountDao implements Dao<Account> {
 
     @Override
     public void save(@NonNull Account account) throws SQLException {
-        String insert = String.format("INSERT INTO %s.account (username, email) VALUES ('%s', '%s')",
-            DEFAULT_SCHEMA, account.getUsername(), account.getEmail());
-        db.executeUpdate(insert);
+        String query = String.format("INSERT INTO %s.account (username, email) VALUES (?, ?)", DEFAULT_SCHEMA);
+
+        PreparedStatement statement = db.preparedStatement(query);
+        statement.setString(1, account.getUsername());
+        statement.setString(2, account.getEmail());
+
+        db.executeUpdate(statement);
     }
 
     @Override
     public void update(@NonNull Account updated) throws SQLException {
-        String update = String.format("UPDATE %s.account SET username = '%s', email = '%s' WHERE user_id = %s",
-            DEFAULT_SCHEMA, updated.getUsername(), updated.getEmail(), updated.getUserId());
-        db.executeUpdate(update);
+        String query = String.format("UPDATE %s.account SET username = ?, email = ? WHERE user_id = ?", DEFAULT_SCHEMA);
+
+        PreparedStatement statement = db.preparedStatement(query);
+        statement.setString(1, updated.getUsername());
+        statement.setString(2, updated.getEmail());
+        statement.setLong(3, updated.getUserId());
+
+        db.executeUpdate(statement);
     }
 
     @Override
     public void delete(@NonNull Account account) throws SQLException {
-        String delete = String.format("DELETE FROM %s.account where user_id = %s", DEFAULT_SCHEMA, account.getUserId());
-        db.executeUpdate(delete);
+        String query = String.format("DELETE FROM %s.account where user_id = ?", DEFAULT_SCHEMA);
+
+        PreparedStatement statement = db.preparedStatement(query);
+        statement.setLong(1, account.getUserId());
+
+        db.executeUpdate(statement);
     }
 
-    void saveMany(List<Account> accounts) throws SQLException {
-        db.startTransaction();
-        try {
-            if (accounts != null && accounts.size() > 0) {
+    public void saveMany(@NonNull List<Account> accounts) throws SQLException {
+        if (!accounts.isEmpty()) {
+            try {
+                db.startTransaction();
                 for (Account account : accounts) {
                     save(account);
                 }
+            } finally {
+                db.endTransaction();
             }
-        } finally {
-            db.endTransaction();
         }
     }
 }
