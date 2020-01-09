@@ -10,7 +10,7 @@ class AccountServiceUT extends Specification implements AccountCreation {
     Dao<Account> accountDao = Mock()
 
     @Subject
-    AccountService service = new AccountService(accountDao)
+    AccountServiceImpl service = new AccountServiceImpl(accountDao)
 
     def 'should get all accounts'() {
         given:
@@ -52,7 +52,7 @@ class AccountServiceUT extends Specification implements AccountCreation {
         1 * accountDao.findById(userId) >> Optional.empty()
 
         and:
-        thrown(AccountService.AccountNotFoundException)
+        thrown(AccountServiceImpl.AccountNotFoundException)
     }
 
     def 'should create new account with given username and email'() {
@@ -122,7 +122,7 @@ class AccountServiceUT extends Specification implements AccountCreation {
         0 * accountDao.delete(_)
 
         and:
-        thrown(AccountService.AccountNotFoundException)
+        thrown(AccountServiceImpl.AccountNotFoundException)
     }
 
     def 'should throw exception when trying update account with userId which is not found in db'() {
@@ -137,7 +137,7 @@ class AccountServiceUT extends Specification implements AccountCreation {
         0 * accountDao.update(_)
 
         and:
-        thrown(AccountService.AccountNotFoundException)
+        thrown(AccountServiceImpl.AccountNotFoundException)
     }
 
     @Unroll
