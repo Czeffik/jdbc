@@ -1,13 +1,26 @@
 package com.trzewik.jdbc;
 
-import com.trzewik.jdbc.db.Account;
-import com.trzewik.jdbc.db.Dao;
-import com.trzewik.jdbc.db.DbFactory;
+import com.trzewik.jdbc.ui.AccountController;
+import com.trzewik.jdbc.ui.AccountControllerFactory;
+import com.trzewik.jdbc.ui.InputProvider;
+import com.trzewik.jdbc.ui.InputProviderFactory;
+import com.trzewik.jdbc.ui.Printer;
+import com.trzewik.jdbc.ui.PrinterFactory;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 public class App {
     public static void main(String[] args) throws SQLException {
-        Dao<Account> dao = DbFactory.accountDao();
+        Printer printer = PrinterFactory.create();
+        printer.printMessage("Possible commands:");
+        Arrays.stream(AccountController.Action.values()).forEach(System.out::println);
+
+        InputProvider provider = InputProviderFactory.create(printer);
+        AccountController controller = AccountControllerFactory.create(provider, printer);
+
+        while (true) {
+            controller.doAction(AccountController.Action.from(provider.collectString("Please type command: ")));
+        }
     }
 }
