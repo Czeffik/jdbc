@@ -17,10 +17,15 @@ public class App {
         Arrays.stream(AccountController.Action.values()).forEach(System.out::println);
 
         InputProvider provider = InputProviderFactory.create(printer);
-        AccountController controller = AccountControllerFactory.create(provider, printer);
+        //AccountController controller = AccountControllerFactory.create(provider, printer);
+        AccountController controller = AccountControllerFactory.createWithInMemory(provider, printer);
 
         while (true) {
-            controller.doAction(AccountController.Action.from(provider.collectString("Please type command: ")));
+            try {
+                controller.doAction(AccountController.Action.from(provider.collectString("Please type command: ")));
+            } catch (Exception ex) {
+                printer.printErrorMessage(ex.getMessage());
+            }
         }
     }
 }

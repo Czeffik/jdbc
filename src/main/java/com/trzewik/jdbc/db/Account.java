@@ -9,13 +9,14 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Random;
 
 @Getter
 @EqualsAndHashCode(of = "userId")
 @AllArgsConstructor
 @ToString
 public class Account {
-    private long userId;
+    private long userId = GenerateId.get();
     private final @NonNull String username;
     private final @NonNull String email;
 
@@ -36,6 +37,14 @@ public class Account {
     public static class AccountCreationException extends RuntimeException {
         AccountCreationException(String username, String email) {
             super(String.format("Can not create new account with username: [%s] and email: [%s]!", username, email));
+        }
+    }
+
+    static class GenerateId {
+        private static final Random random = new Random();
+
+        public static long get() {
+            return Math.abs(random.nextLong());
         }
     }
 }
