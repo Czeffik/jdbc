@@ -1,8 +1,10 @@
 package com.trzewik.jdbc.db;
 
+import com.trzewik.jdbc.raeder.FileReader;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -10,6 +12,7 @@ import java.util.Optional;
 @AllArgsConstructor
 class AccountServiceImpl implements AccountService {
     private final Dao<Account> accountDao;
+    private final FileReader<Account> fileReader;
 
     @Override
     public List<Account> getAllAccounts() throws SQLException {
@@ -46,6 +49,13 @@ class AccountServiceImpl implements AccountService {
         Account updated = createUpdated(account, username, email);
 
         accountDao.update(updated);
+    }
+
+    @Override
+    public void createAccountsFromCsv(String pathToFile) throws SQLException, FileNotFoundException {
+        List<Account> accounts = fileReader.read(pathToFile);
+
+        accountDao.saveMany(accounts);
     }
 
     private Account createUpdated(Account account, String username, String email) {

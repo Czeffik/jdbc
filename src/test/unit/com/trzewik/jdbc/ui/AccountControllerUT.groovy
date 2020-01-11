@@ -81,4 +81,17 @@ class AccountControllerUT extends Specification implements AccountCreation {
         1 * service.updateAccount(123123, 'username', 'email')
         1 * printer.printMessage(_)
     }
+
+    def 'should create accounts from csv file'() {
+        given:
+        Action action = Action.CREATE_FROM_CSV
+
+        when:
+        controller.doAction(action)
+
+        then:
+        1 * provider.collectString('Type path to csv file with accounts to save: ') >> 'some/path/to/file'
+        1 * service.createAccountsFromCsv('some/path/to/file')
+        1 * printer.printMessage(_)
+    }
 }

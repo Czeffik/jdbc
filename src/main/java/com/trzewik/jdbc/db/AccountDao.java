@@ -73,6 +73,7 @@ class AccountDao implements Dao<Account> {
         db.executeUpdate(statement);
     }
 
+    @Override
     public void saveMany(@NonNull List<Account> accounts) throws SQLException {
         if (!accounts.isEmpty()) {
             try {

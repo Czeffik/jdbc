@@ -1,5 +1,6 @@
 package com.trzewik.jdbc.db
 
+import com.trzewik.jdbc.raeder.FileReader
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
@@ -8,9 +9,10 @@ import spock.lang.Unroll
 class AccountServiceUT extends Specification implements AccountCreation {
 
     Dao<Account> accountDao = Mock()
+    FileReader<Account> reader = Mock()
 
     @Subject
-    AccountServiceImpl service = new AccountServiceImpl(accountDao)
+    AccountServiceImpl service = new AccountServiceImpl(accountDao, reader)
 
     def 'should get all accounts'() {
         given:
@@ -215,6 +217,24 @@ class AccountServiceUT extends Specification implements AccountCreation {
             assert updated.getUserId() == userId
             assert updated.getEmail() == email
             updated
+        })
+    }
+
+    def 'should create accounts from csv file'() {
+        given:
+        def accounts = [createAccount(), createAccount(new AccountCreator(email: 'other emaill'))]
+
+        and:
+        def pathToFile = 'some/path'
+
+        when:
+        service.createAccountsFromCsv(pathToFile)
+
+        then:
+        1 * reader.read(pathToFile) >> accounts
+        1 * accountDao.saveMany({ List<Account> it ->
+            assert accounts == it
+            return it
         })
     }
 }
