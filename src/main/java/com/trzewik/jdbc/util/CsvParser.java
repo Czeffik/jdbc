@@ -38,57 +38,23 @@ public class CsvParser {
         char[] chars = line.toCharArray();
 
         for (int i = 0; i < chars.length; i++) {
-            if (inQuotes) {
-                if (chars[i] == QUOTE) {
-                    int numberOfNextQuotes = countQuotes(chars, i);
-                    boolean endQuote = startOrEndQuote(numberOfNextQuotes);
-                    if (endQuote) {
-                        inQuotes = false;
-                        if (numberOfNextQuotes > 1) {
-                            for (int j = 0; j < (numberOfNextQuotes - 1) / 2; j++) {
-                                current.append(QUOTE);
-                            }
-                            i += numberOfNextQuotes - 1;
-                        }
-                        if (i < chars.length - 1 && chars[i + 1] != SEPARATOR) {
-                            throw new IllegalArgumentException("After ending quote must be separator!");
-                        }
-                    } else {
-                        for (int j = 0; j < numberOfNextQuotes / 2; j++) {
-                            current.append(QUOTE);
-                        }
-                        i += numberOfNextQuotes - 1;
+            if (chars[i] == QUOTE) {
+                int quotesNumber = countQuotes(chars, i);
+                i = appendQuotesAndReturnIndex(current, i, quotesNumber);
+                if (isStartOrEndQuote(quotesNumber)) {
+                    if (afterEndingQuoteMissingSeparator(inQuotes, chars, i)) {
+                        throw new IllegalArgumentException("After ending quote must be separator!");
                     }
-                } else {
-                    if (i == chars.length - 1) {
-                        throw new IllegalArgumentException("Missing ending quote!");
-                    }
-                    current.append(chars[i]);
+                    inQuotes = !inQuotes;
                 }
+            } else if (!inQuotes && chars[i] == SEPARATOR) {
+                result.add(current.toString());
+                current = new StringBuffer();
             } else {
-                if (chars[i] == QUOTE) {
-                    int numberOfNextQuotes = countQuotes(chars, i);
-                    boolean startQuote = startOrEndQuote(numberOfNextQuotes);
-                    if (startQuote) {
-                        inQuotes = true;
-                        if (numberOfNextQuotes > 1) {
-                            for (int j = 0; j < (numberOfNextQuotes - 1) / 2; j++) {
-                                current.append(QUOTE);
-                            }
-                            i += numberOfNextQuotes - 1;
-                        }
-                    } else {
-                        for (int j = 0; j < numberOfNextQuotes / 2; j++) {
-                            current.append(QUOTE);
-                        }
-                        i += numberOfNextQuotes - 1;
-                    }
-                } else if (chars[i] == SEPARATOR) {
-                    result.add(current.toString());
-                    current = new StringBuffer();
-                } else {
-                    current.append(chars[i]);
+                if (inQuotes && isLastIndex(chars, i)) {
+                    throw new IllegalArgumentException("Missing ending quote!");
                 }
+                current.append(chars[i]);
             }
         }
         result.add(current.toString());
@@ -96,7 +62,35 @@ public class CsvParser {
         return result;
     }
 
-    private static boolean startOrEndQuote(int quotesNumber) {
+    private static boolean afterEndingQuoteMissingSeparator(boolean inQuotes, char[] chars, int index) {
+        return inQuotes && isNotLastIndex(chars, index) && nextCharIsNotSeparator(chars, index);
+    }
+
+    private static boolean isNotLastIndex(char[] array, int currentIndex) {
+        return currentIndex != array.length - 1;
+    }
+
+    private static boolean nextCharIsNotSeparator(char[] chars, int index) {
+        return chars[index + 1] != SEPARATOR;
+    }
+
+    private static int appendQuotesAndReturnIndex(StringBuffer currentWord, int currentIndex, int numberOfNextQuotes) {
+        for (int j = 0; j < numberOfQuotesToAdd(numberOfNextQuotes); j++) {
+            currentWord.append(QUOTE);
+        }
+        currentIndex += numberOfNextQuotes - 1;
+        return currentIndex;
+    }
+
+    private static int numberOfQuotesToAdd(int numberOfNextQuotes) {
+        return (numberOfNextQuotes - (numberOfNextQuotes % 2)) / 2;
+    }
+
+    private static boolean isLastIndex(char[] array, int currentIndex) {
+        return currentIndex == array.length - 1;
+    }
+
+    private static boolean isStartOrEndQuote(int quotesNumber) {
         return quotesNumber % 2 == 1;
     }
 
