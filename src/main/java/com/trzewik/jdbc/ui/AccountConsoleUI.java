@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class AccountController {
+public class AccountConsoleUI {
     private static final String TYPE_USER_ID = "Type userId: ";
     private static final String TYPE_USERNAME = "Type username: ";
     private static final String TYPE_EMAIL = "Type email: ";
