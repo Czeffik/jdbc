@@ -5,22 +5,22 @@ import com.trzewik.jdbc.domain.AccountService
 import spock.lang.Specification
 import spock.lang.Subject
 
-import static com.trzewik.jdbc.ui.AccountController.Action
+import static AccountConsoleUI.Action
 
-class AccountControllerUT extends Specification implements AccountCreation {
+class AccountConsoleUIUT extends Specification implements AccountCreation {
     AccountService service = Mock()
     InputProvider provider = Mock()
     Printer printer = Mock()
 
     @Subject
-    AccountController controller = new AccountController(service, provider, printer)
+    AccountConsoleUI consoleUI = new AccountConsoleUI(service, provider, printer)
 
     def 'should print one account'() {
         given:
         Action action = Action.GET
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * provider.collectLong(_) >> 12
@@ -33,7 +33,7 @@ class AccountControllerUT extends Specification implements AccountCreation {
         Action action = Action.GET_ALL
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * service.getAll() >> [createAccount()]
@@ -45,7 +45,7 @@ class AccountControllerUT extends Specification implements AccountCreation {
         Action action = Action.CREATE
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * provider.collectString('Type username: ') >> 'username'
@@ -59,7 +59,7 @@ class AccountControllerUT extends Specification implements AccountCreation {
         Action action = Action.DELETE
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * provider.collectLong('Type userId: ') >> 123123
@@ -72,7 +72,7 @@ class AccountControllerUT extends Specification implements AccountCreation {
         Action action = Action.UPDATE
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * provider.collectLong('Type userId: ') >> 123123
@@ -87,7 +87,7 @@ class AccountControllerUT extends Specification implements AccountCreation {
         Action action = Action.CREATE_FROM_CSV
 
         when:
-        controller.doAction(action)
+        consoleUI.doAction(action)
 
         then:
         1 * provider.collectString('Type path to csv file with accounts to save: ') >> 'some/path/to/file'
