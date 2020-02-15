@@ -5,8 +5,8 @@ import com.trzewik.jdbc.domain.Account;
 import com.trzewik.jdbc.domain.AccountRepository;
 import com.trzewik.jdbc.domain.AccountService;
 import com.trzewik.jdbc.domain.AccountServiceFactory;
-import com.trzewik.jdbc.reader.FileReader;
-import com.trzewik.jdbc.reader.FileReaderFactory;
+import com.trzewik.jdbc.domain.AccountsProvider;
+import com.trzewik.jdbc.reader.AccountsProviderFactory;
 import com.trzewik.jdbc.ui.AccountConsoleUI;
 import com.trzewik.jdbc.ui.AccountConsoleUIFactory;
 import com.trzewik.jdbc.ui.InputProvider;
@@ -23,16 +23,16 @@ public class App {
         Arrays.stream(AccountConsoleUI.Action.values()).forEach(System.out::println);
 
         InputProvider provider = InputProviderFactory.create(printer);
-        FileReader<Account> reader = FileReaderFactory.createAccountCsvReader();
+        AccountsProvider<Account> accountProvider = AccountsProviderFactory.createAccountCsvReader();
 
         //AccountConsoleUI with real database - if want switch to in memory comment three lines bellow
         AccountRepository repository = AccountRepositoryFactory.create();
-        AccountService service = AccountServiceFactory.create(repository, reader);
+        AccountService service = AccountServiceFactory.create(repository, accountProvider);
         AccountConsoleUI consoleUI = AccountConsoleUIFactory.create(service, provider, printer);
 
         //AccountConsoleUI with in memory repository - if want switch to in memory uncomment three lines bellow
         //AccountRepository inMemoryRepository = AccountRepositoryFactory.createInMemory();
-        //AccountService service = AccountServiceFactory.create(inMemoryRepository, reader);
+        //AccountService service = AccountServiceFactory.create(inMemoryRepository, accountProvider);
         //AccountConsoleUI consoleUI = AccountControllerFactory.create(service, provider, printer);
 
         while (true) {

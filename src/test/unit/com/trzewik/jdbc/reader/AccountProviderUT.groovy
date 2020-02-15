@@ -1,19 +1,20 @@
 package com.trzewik.jdbc.reader
 
 import com.trzewik.jdbc.domain.Account
+import com.trzewik.jdbc.domain.AccountsProvider
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
 
-class AccountReaderUT extends Specification implements FileReading {
+class AccountProviderUT extends Specification implements FileReading {
 
     @Subject
-    FileReader<Account> reader = FileReaderFactory.createAccountCsvReader()
+    AccountsProvider<Account> provider = AccountsProviderFactory.createAccountCsvReader()
 
     @Unroll
     def 'should throw exception because: #REASON'() {
         when:
-        reader.read(getAbsolutePath(FILE_NAME))
+        provider.provide(getAbsolutePath(FILE_NAME))
 
         then:
         thrown(Account.CreationException)
@@ -26,7 +27,7 @@ class AccountReaderUT extends Specification implements FileReading {
 
     def 'should return two parsed accounts'() {
         when:
-        def accounts = reader.read(getAbsolutePath('account/correct.csv'))
+        def accounts = provider.provide(getAbsolutePath('account/correct.csv'))
 
         then:
         accounts.size() == 2
