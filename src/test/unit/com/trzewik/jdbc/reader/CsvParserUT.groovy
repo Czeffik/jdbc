@@ -1,14 +1,17 @@
-package com.trzewik.jdbc.util
+package com.trzewik.jdbc.reader
 
-import com.trzewik.jdbc.reader.FileReading
 import spock.lang.Specification
+import spock.lang.Subject
 import spock.lang.Unroll
 
 class CsvParserUT extends Specification implements FileReading {
 
+    @Subject
+    CsvParser parser = new CsvParser()
+
     def 'should parse csv file ignoring empty lines'() {
         when:
-        def strings = CsvParser.parseFile(getAbsolutePath('parser/correct.csv'))
+        def strings = parser.parseFile(getAbsolutePath('parser/correct.csv'))
 
         then:
         strings.size() == 5
@@ -47,7 +50,7 @@ class CsvParserUT extends Specification implements FileReading {
 
     def 'should parse empty file'() {
         when:
-        def strings = CsvParser.parseFile(getAbsolutePath('parser/empty.csv'))
+        def strings = parser.parseFile(getAbsolutePath('parser/empty.csv'))
 
         then:
         strings.isEmpty()
@@ -55,7 +58,7 @@ class CsvParserUT extends Specification implements FileReading {
 
     def 'should parse file with only empty lines'() {
         when:
-        def strings = CsvParser.parseFile(getAbsolutePath('parser/onlyLines.csv'))
+        def strings = parser.parseFile(getAbsolutePath('parser/onlyLines.csv'))
 
         then:
         strings.isEmpty()
@@ -64,7 +67,7 @@ class CsvParserUT extends Specification implements FileReading {
     @Unroll
     def 'should throw exception because: #REASON'() {
         when:
-        CsvParser.parseFile(getAbsolutePath(FILE_NAME))
+        parser.parseFile(getAbsolutePath(FILE_NAME))
 
         then:
         thrown(IllegalArgumentException)
@@ -77,7 +80,7 @@ class CsvParserUT extends Specification implements FileReading {
 
     def 'should throw exception when file not found'() {
         when:
-        CsvParser.parseFile('really/bad/path')
+        parser.parseFile('really/bad/path')
 
         then:
         thrown(FileNotFoundException)

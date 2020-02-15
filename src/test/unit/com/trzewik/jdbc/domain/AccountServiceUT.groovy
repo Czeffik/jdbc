@@ -1,6 +1,6 @@
 package com.trzewik.jdbc.domain
 
-import com.trzewik.jdbc.raeder.FileReader
+import com.trzewik.jdbc.reader.FileReader
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll

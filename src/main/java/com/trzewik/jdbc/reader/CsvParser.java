@@ -1,7 +1,5 @@
-package com.trzewik.jdbc.util;
+package com.trzewik.jdbc.reader;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -10,12 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CsvParser {
-    private static final char SEPARATOR = ',';
-    private static final char QUOTE = '"';
+class CsvParser {
+    private final char separator;
+    private final char quote;
 
-    public static List<List<String>> parseFile(String pathToFile) throws FileNotFoundException {
+    CsvParser() {
+        this.separator = ',';
+        this.quote = '"';
+    }
+
+    public List<List<String>> parseFile(String pathToFile) throws FileNotFoundException {
         Scanner scanner = createScanner(pathToFile);
         List<List<String>> lines = new ArrayList<>();
         while (scanner.hasNext()) {
@@ -27,7 +29,7 @@ public class CsvParser {
         return lines;
     }
 
-    private static List<String> parseLine(String line) {
+    private List<String> parseLine(String line) {
         List<String> result = new ArrayList<>();
         if (StringUtils.isEmpty(line)) {
             return result;
@@ -38,7 +40,7 @@ public class CsvParser {
         char[] chars = line.toCharArray();
 
         for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == QUOTE) {
+            if (chars[i] == quote) {
                 int quotesNumber = countQuotes(chars, i);
                 i = appendQuotesAndReturnIndex(current, i, quotesNumber);
                 if (isStartOrEndQuote(quotesNumber)) {
@@ -47,7 +49,7 @@ public class CsvParser {
                     }
                     inQuotes = !inQuotes;
                 }
-            } else if (!inQuotes && chars[i] == SEPARATOR) {
+            } else if (!inQuotes && chars[i] == separator) {
                 result.add(current.toString());
                 current = new StringBuffer();
             } else {
@@ -62,52 +64,52 @@ public class CsvParser {
         return result;
     }
 
-    private static boolean afterEndingQuoteMissingSeparator(boolean inQuotes, char[] chars, int index) {
+    private boolean afterEndingQuoteMissingSeparator(boolean inQuotes, char[] chars, int index) {
         return inQuotes && isNotLastIndex(chars, index) && nextCharIsNotSeparator(chars, index);
     }
 
-    private static boolean isNotLastIndex(char[] array, int currentIndex) {
+    private boolean isNotLastIndex(char[] array, int currentIndex) {
         return currentIndex != array.length - 1;
     }
 
-    private static boolean nextCharIsNotSeparator(char[] chars, int index) {
-        return chars[index + 1] != SEPARATOR;
+    private boolean nextCharIsNotSeparator(char[] chars, int index) {
+        return chars[index + 1] != separator;
     }
 
-    private static int appendQuotesAndReturnIndex(StringBuffer currentWord, int currentIndex, int numberOfNextQuotes) {
+    private int appendQuotesAndReturnIndex(StringBuffer currentWord, int currentIndex, int numberOfNextQuotes) {
         for (int j = 0; j < numberOfQuotesToAdd(numberOfNextQuotes); j++) {
-            currentWord.append(QUOTE);
+            currentWord.append(quote);
         }
         currentIndex += numberOfNextQuotes - 1;
         return currentIndex;
     }
 
-    private static int numberOfQuotesToAdd(int numberOfNextQuotes) {
+    private int numberOfQuotesToAdd(int numberOfNextQuotes) {
         return (numberOfNextQuotes - (numberOfNextQuotes % 2)) / 2;
     }
 
-    private static boolean isLastIndex(char[] array, int currentIndex) {
+    private boolean isLastIndex(char[] array, int currentIndex) {
         return currentIndex == array.length - 1;
     }
 
-    private static boolean isStartOrEndQuote(int quotesNumber) {
+    private boolean isStartOrEndQuote(int quotesNumber) {
         return quotesNumber % 2 == 1;
     }
 
-    private static int countQuotes(char[] chars, int startIndex) {
+    private int countQuotes(char[] chars, int startIndex) {
         int counter = 0;
-        while (startIndex < chars.length && chars[startIndex] == QUOTE) {
+        while (startIndex < chars.length && chars[startIndex] == quote) {
             counter++;
             startIndex++;
         }
         return counter;
     }
 
-    private static Scanner createScanner(String path) throws FileNotFoundException {
+    private Scanner createScanner(String path) throws FileNotFoundException {
         return new Scanner(createFile(path));
     }
 
-    private static File createFile(String path) {
+    private File createFile(String path) {
         return new File(path);
     }
 }

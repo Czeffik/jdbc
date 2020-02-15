@@ -1,17 +1,20 @@
-package com.trzewik.jdbc.raeder;
+package com.trzewik.jdbc.reader;
 
 import com.trzewik.jdbc.domain.Account;
 import com.trzewik.jdbc.domain.AccountFactory;
-import com.trzewik.jdbc.util.CsvParser;
+import lombok.AllArgsConstructor;
 
 import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@AllArgsConstructor
 class AccountCsvReader implements FileReader<Account> {
+    private final CsvParser parser;
+
     @Override
     public List<Account> read(String path) throws FileNotFoundException {
-        return CsvParser.parseFile(path).stream()
+        return parser.parseFile(path).stream()
             .map(AccountFactory::create)
             .collect(Collectors.toList());
     }

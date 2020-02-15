@@ -1,4 +1,4 @@
-package com.trzewik.jdbc.raeder;
+package com.trzewik.jdbc.reader;
 
 import com.trzewik.jdbc.domain.Account;
 import lombok.AccessLevel;
@@ -8,6 +8,6 @@ import lombok.NoArgsConstructor;
 public class FileReaderFactory {
 
     public static FileReader<Account> createAccountCsvReader() {
-        return new AccountCsvReader();
+        return new AccountCsvReader(new CsvParser());
     }
 }

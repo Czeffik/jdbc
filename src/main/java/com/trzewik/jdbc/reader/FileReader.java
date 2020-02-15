@@ -1,4 +1,4 @@
-package com.trzewik.jdbc.raeder;
+package com.trzewik.jdbc.reader;
 
 import java.io.FileNotFoundException;
 import java.util.List;

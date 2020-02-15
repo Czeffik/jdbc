@@ -5,8 +5,8 @@ import com.trzewik.jdbc.domain.Account;
 import com.trzewik.jdbc.domain.AccountRepository;
 import com.trzewik.jdbc.domain.AccountService;
 import com.trzewik.jdbc.domain.AccountServiceFactory;
-import com.trzewik.jdbc.raeder.FileReader;
-import com.trzewik.jdbc.raeder.FileReaderFactory;
+import com.trzewik.jdbc.reader.FileReader;
+import com.trzewik.jdbc.reader.FileReaderFactory;
 import com.trzewik.jdbc.ui.AccountController;
 import com.trzewik.jdbc.ui.AccountControllerFactory;
 import com.trzewik.jdbc.ui.InputProvider;
@@ -14,11 +14,10 @@ import com.trzewik.jdbc.ui.InputProviderFactory;
 import com.trzewik.jdbc.ui.Printer;
 import com.trzewik.jdbc.ui.PrinterFactory;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 
 public class App {
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
         Printer printer = PrinterFactory.create();
         printer.printMessage("Possible commands:");
         Arrays.stream(AccountController.Action.values()).forEach(System.out::println);
@@ -32,9 +31,9 @@ public class App {
         AccountController controller = AccountControllerFactory.create(service, provider, printer);
 
         //Controller with in memory repository - if want switch to in memory uncomment three lines bellow
-//        AccountRepository inMemoryRepository = AccountRepositoryFactory.createInMemory();
-//        AccountService service = AccountServiceFactory.create(inMemoryRepository, reader);
-//        AccountController controller = AccountControllerFactory.create(service, provider, printer);
+        //AccountRepository inMemoryRepository = AccountRepositoryFactory.createInMemory();
+        //AccountService service = AccountServiceFactory.create(inMemoryRepository, reader);
+        //AccountController controller = AccountControllerFactory.create(service, provider, printer);
 
         while (true) {
             try {

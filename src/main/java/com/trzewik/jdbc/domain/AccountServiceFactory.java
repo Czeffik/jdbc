@@ -1,6 +1,6 @@
 package com.trzewik.jdbc.domain;
 
-import com.trzewik.jdbc.raeder.FileReader;
+import com.trzewik.jdbc.reader.FileReader;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
