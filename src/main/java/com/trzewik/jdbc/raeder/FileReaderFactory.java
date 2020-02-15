@@ -1,6 +1,6 @@
 package com.trzewik.jdbc.raeder;
 
-import com.trzewik.jdbc.db.Account;
+import com.trzewik.jdbc.domain.Account;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 

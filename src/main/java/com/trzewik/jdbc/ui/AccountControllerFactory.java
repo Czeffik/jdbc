@@ -1,18 +1,12 @@
 package com.trzewik.jdbc.ui;
 
-import com.trzewik.jdbc.db.AccountServiceFactory;
+import com.trzewik.jdbc.domain.AccountService;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-import java.sql.SQLException;
-
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AccountControllerFactory {
-    public static AccountController create(InputProvider provider, Printer printer) throws SQLException {
-        return new AccountController(AccountServiceFactory.create(), provider, printer);
-    }
-
-    public static AccountController createWithInMemory(InputProvider provider, Printer printer) throws SQLException {
-        return new AccountController(AccountServiceFactory.createWithInmemory(), provider, printer);
+    public static AccountController create(AccountService accountService, InputProvider provider, Printer printer) {
+        return new AccountController(accountService, provider, printer);
     }
 }

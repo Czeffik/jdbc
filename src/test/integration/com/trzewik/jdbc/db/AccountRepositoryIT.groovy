@@ -1,22 +1,16 @@
 package com.trzewik.jdbc.db
 
-import spock.lang.Shared
+import com.trzewik.jdbc.domain.Account
+import com.trzewik.jdbc.domain.AccountCreation
+import com.trzewik.jdbc.domain.AccountRepository
 import spock.lang.Subject
 
-import java.sql.SQLException
-
-class AccountDaoIT extends DbSpec implements AccountCreation {
-    @Shared
-    DbHelper dbHelper
+class AccountRepositoryIT extends DbSpec implements AccountCreation {
     @Subject
-    Dao<Account> dao
-
-    def setupSpec() {
-        dbHelper = new DbHelper()
-    }
+    AccountRepository repository
 
     def setup() {
-        dao = DbFactory.accountDao()
+        repository = AccountRepositoryFactory.create()
         dbHelper.dbCleanup()
     }
 
@@ -32,14 +26,14 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         def row = dbHelper.save(account)
 
         then:
-        List<Account> accounts = dao.findAll()
+        List<Account> accounts = repository.getAll()
         accounts.size() == 1
 
         and:
         with(accounts.first()) {
-            userId == getInsertedRowId(row)
-            username == account.username
-            email == account.email
+            getUserId() == getInsertedRowId(row)
+            getUsername() == account.username
+            getEmail() == account.email
         }
     }
 
@@ -50,19 +44,19 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         def userId = getInsertedRowId(insertedRows)
 
         expect:
-        def found = dao.findById(userId)
+        def found = repository.findById(userId)
         found.isPresent()
 
         and:
         with(found.get()) {
-            username == account.username
-            email == account.email
+            getUsername() == account.username
+            getEmail() == account.email
         }
     }
 
     def 'should return empty optional when can not find account with user_id'() {
         when:
-        def found = dao.findById(4)
+        def found = repository.findById(4)
 
         then:
         !found.present
@@ -73,7 +67,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         def account = createAccount()
 
         when:
-        dao.save(account)
+        repository.save(account)
 
         then:
         def accounts = dbHelper.allAccounts
@@ -99,7 +93,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         ))
 
         when:
-        dao.update(updatedAccount)
+        repository.update(updatedAccount)
 
         then:
         def accounts = dbHelper.getAllAccounts()
@@ -119,7 +113,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         account = createAccount(new AccountCreator(userId, account))
 
         when:
-        dao.delete(account)
+        repository.delete(account)
 
         then:
         dbHelper.allAccounts.isEmpty()
@@ -131,16 +125,16 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         def second = createAccount()
 
         when:
-        dao.saveMany([first, second])
+        repository.saveMany([first, second])
 
         then:
-        thrown(SQLException)
+        thrown(AccountRepository.Exception)
 
         and:
         dbHelper.allAccounts.isEmpty()
 
         when:
-        dao.save(first)
+        repository.save(first)
 
         then:
         dbHelper.allAccounts.size() == 1
@@ -155,7 +149,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
         ))
 
         when:
-        dao.saveMany([first, second])
+        repository.saveMany([first, second])
 
         then:
         dbHelper.allAccounts.size() == 2
@@ -163,7 +157,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
 
     def 'should do nothing when accounts are empty list'() {
         when:
-        dao.saveMany([])
+        repository.saveMany([])
 
         then:
         dbHelper.allAccounts.isEmpty()
@@ -171,7 +165,7 @@ class AccountDaoIT extends DbSpec implements AccountCreation {
 
     def 'should throw exception when accounts are null'() {
         when:
-        dao.saveMany(null)
+        repository.saveMany(null)
 
         then:
         thrown(NullPointerException)

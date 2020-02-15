@@ -1,30 +1,29 @@
-package com.trzewik.jdbc.db
+package com.trzewik.jdbc.domain
 
 import com.trzewik.jdbc.raeder.FileReader
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
 
-
 class AccountServiceUT extends Specification implements AccountCreation {
 
-    Dao<Account> accountDao = Mock()
+    AccountRepository repository = new AccountRepositoryInMemory()
     FileReader<Account> reader = Mock()
 
     @Subject
-    AccountServiceImpl service = new AccountServiceImpl(accountDao, reader)
+    AccountServiceImpl service = new AccountServiceImpl(repository, reader)
 
     def 'should get all accounts'() {
         given:
         List<Account> accounts = [createAccount()]
 
+        and:
+        repository.saveMany(accounts)
+
         when:
-        def results = service.getAllAccounts()
+        def results = service.getAll()
 
         then:
-        1 * accountDao.findAll() >> accounts
-
-        and:
         results.size() == accounts.size()
         results.first() == accounts.first()
     }
@@ -33,13 +32,13 @@ class AccountServiceUT extends Specification implements AccountCreation {
         given:
         Account account = createAccount()
 
+        and:
+        repository.save(account)
+
         when:
-        def result = service.getAccountById(account.userId)
+        def result = service.getById(account.userId)
 
         then:
-        1 * accountDao.findById(account.userId) >> Optional.of(account)
-
-        and:
         result == account
     }
 
@@ -48,13 +47,10 @@ class AccountServiceUT extends Specification implements AccountCreation {
         long userId = 123123131231
 
         when:
-        service.getAccountById(userId)
+        service.getById(userId)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.empty()
-
-        and:
-        thrown(AccountServiceImpl.AccountNotFoundException)
+        thrown(AccountRepository.AccountNotFoundException)
     }
 
     def 'should create new account with given username and email'() {
@@ -63,23 +59,23 @@ class AccountServiceUT extends Specification implements AccountCreation {
         def email = 'example email address'
 
         when:
-        service.createAccount(username, email)
+        service.create(username, email)
 
         then:
-        1 * accountDao.save({ Account account ->
-            assert account.username == username
-            assert account.email == email
-            account
-        })
+        repository.repository.size() == 1
+        with(repository.repository.values().first()) {
+            it.username == username
+            it.email == email
+        }
     }
 
     @Unroll
     def 'should throw exception when trying create new account with username: [#USERNAME] and email: [#EMAIL]'() {
         when:
-        service.createAccount(USERNAME, EMAIL)
+        service.create(USERNAME, EMAIL)
 
         then:
-        thrown(Account.AccountCreationException)
+        thrown(Account.CreationException)
 
         where:
         USERNAME | EMAIL
@@ -104,12 +100,14 @@ class AccountServiceUT extends Specification implements AccountCreation {
         long userId = 1231312
         def account = createAccount(new AccountCreator(userId: userId))
 
+        and:
+        repository.save(account)
+
         when:
-        service.deleteAccount(userId)
+        service.delete(userId)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.of(account)
-        1 * accountDao.delete(account)
+        repository.repository.size() == 0
     }
 
     def 'should throw exception when trying delete account with userId which is not found in db'() {
@@ -117,14 +115,10 @@ class AccountServiceUT extends Specification implements AccountCreation {
         long userId = 1231312
 
         when:
-        service.deleteAccount(userId)
+        service.delete(userId)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.empty()
-        0 * accountDao.delete(_)
-
-        and:
-        thrown(AccountServiceImpl.AccountNotFoundException)
+        thrown(AccountRepository.AccountNotFoundException)
     }
 
     def 'should throw exception when trying update account with userId which is not found in db'() {
@@ -132,20 +126,16 @@ class AccountServiceUT extends Specification implements AccountCreation {
         long userId = 1231312
 
         when:
-        service.updateAccount(userId, 'new Username', '')
+        service.update(userId, 'new Username', '')
 
         then:
-        1 * accountDao.findById(userId) >> Optional.empty()
-        0 * accountDao.update(_)
-
-        and:
-        thrown(AccountServiceImpl.AccountNotFoundException)
+        thrown(AccountRepository.AccountNotFoundException)
     }
 
     @Unroll
     def 'should throw exception when trying trying update account with username: [#USERNAME] and email: [#EMAIL]'() {
         when:
-        service.updateAccount(12132, USERNAME, EMAIL)
+        service.update(12132, USERNAME, EMAIL)
 
         then:
         thrown(IllegalArgumentException)
@@ -168,17 +158,19 @@ class AccountServiceUT extends Specification implements AccountCreation {
         def account = createAccount(new AccountCreator(userId: userId))
         def username = 'new Username'
 
+        and:
+        repository.save(account)
+
         when:
-        service.updateAccount(userId, username, null)
+        service.update(userId, username, null)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.of(account)
-        1 * accountDao.update({ Account updated ->
-            assert updated.getUsername() == username
-            assert updated.getUserId() == userId
-            assert updated.getEmail() == account.getEmail()
-            updated
-        })
+        repository.repository.size() == 1
+        with(repository.repository.values().first()) {
+            it.userId == userId
+            it.username == username
+            it.email == account.email
+        }
     }
 
     def 'should update account email'() {
@@ -187,17 +179,19 @@ class AccountServiceUT extends Specification implements AccountCreation {
         def account = createAccount(new AccountCreator(userId: userId))
         def email = 'new email'
 
+        and:
+        repository.save(account)
+
         when:
-        service.updateAccount(userId, '', email)
+        service.update(userId, '', email)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.of(account)
-        1 * accountDao.update({ Account updated ->
-            assert updated.getUsername() == account.getUsername()
-            assert updated.getUserId() == userId
-            assert updated.getEmail() == email
-            updated
-        })
+        repository.repository.size() == 1
+        with(repository.repository.values().first()) {
+            it.userId == userId
+            it.username == account.username
+            it.email == email
+        }
     }
 
     def 'should update account username and email'() {
@@ -207,17 +201,19 @@ class AccountServiceUT extends Specification implements AccountCreation {
         def email = 'new email'
         def username = 'new username'
 
+        and:
+        repository.save(account)
+
         when:
-        service.updateAccount(userId, username, email)
+        service.update(userId, username, email)
 
         then:
-        1 * accountDao.findById(userId) >> Optional.of(account)
-        1 * accountDao.update({ Account updated ->
-            assert updated.getUsername() == username
-            assert updated.getUserId() == userId
-            assert updated.getEmail() == email
-            updated
-        })
+        repository.repository.size() == 1
+        with(repository.repository.values().first()) {
+            it.userId == userId
+            it.username == username
+            it.email == email
+        }
     }
 
     def 'should create accounts from csv file'() {
@@ -228,13 +224,12 @@ class AccountServiceUT extends Specification implements AccountCreation {
         def pathToFile = 'some/path'
 
         when:
-        service.createAccountsFromCsv(pathToFile)
+        service.createFromCsv(pathToFile)
 
         then:
         1 * reader.read(pathToFile) >> accounts
-        1 * accountDao.saveMany({ List<Account> it ->
-            assert accounts == it
-            return it
-        })
+
+        and:
+        repository.repository.size() == accounts.size()
     }
 }

@@ -1,7 +1,7 @@
 package com.trzewik.jdbc.raeder;
 
-import com.trzewik.jdbc.db.Account;
-import com.trzewik.jdbc.db.AccountFactory;
+import com.trzewik.jdbc.domain.Account;
+import com.trzewik.jdbc.domain.AccountFactory;
 import com.trzewik.jdbc.util.CsvParser;
 
 import java.io.FileNotFoundException;
