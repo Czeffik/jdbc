@@ -1,6 +1,5 @@
 package com.trzewik.jdbc.domain;
 
-import com.trzewik.jdbc.reader.FileReader;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
@@ -10,7 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 class AccountServiceImpl implements AccountService {
     private final AccountRepository repository;
-    private final FileReader<Account> fileReader;
+    private final AccountsProvider<Account> provider;
 
     @Override
     public List<Account> getAll() {
@@ -47,7 +46,7 @@ class AccountServiceImpl implements AccountService {
 
     @Override
     public void createFromCsv(String pathToFile) throws FileNotFoundException {
-        List<Account> accounts = fileReader.read(pathToFile);
+        List<Account> accounts = provider.provide(pathToFile);
 
         repository.saveMany(accounts);
     }

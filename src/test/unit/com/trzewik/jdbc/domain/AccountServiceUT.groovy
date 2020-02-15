@@ -1,6 +1,5 @@
 package com.trzewik.jdbc.domain
 
-import com.trzewik.jdbc.reader.FileReader
 import spock.lang.Specification
 import spock.lang.Subject
 import spock.lang.Unroll
@@ -8,10 +7,10 @@ import spock.lang.Unroll
 class AccountServiceUT extends Specification implements AccountCreation {
 
     AccountRepository repository = new AccountRepositoryInMemory()
-    FileReader<Account> reader = Mock()
+    AccountsProvider<Account> provider = Mock()
 
     @Subject
-    AccountServiceImpl service = new AccountServiceImpl(repository, reader)
+    AccountServiceImpl service = new AccountServiceImpl(repository, provider)
 
     def 'should get all accounts'() {
         given:
@@ -227,7 +226,7 @@ class AccountServiceUT extends Specification implements AccountCreation {
         service.createFromCsv(pathToFile)
 
         then:
-        1 * reader.read(pathToFile) >> accounts
+        1 * provider.provide(pathToFile) >> accounts
 
         and:
         repository.repository.size() == accounts.size()
