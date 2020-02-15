@@ -17,8 +17,8 @@ class AccountRepositoryImpl implements AccountRepository {
     public List<Account> getAll() {
         try {
             return dao.findAll().stream().map(AccountDto::from).map(AccountDto::to).collect(Collectors.toList());
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 
@@ -26,8 +26,8 @@ class AccountRepositoryImpl implements AccountRepository {
     public Optional<Account> findById(long userId) {
         try {
             return dao.findById(userId).map(AccountDto::from).map(AccountDto::to);
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 
@@ -35,8 +35,8 @@ class AccountRepositoryImpl implements AccountRepository {
     public void save(Account account) {
         try {
             dao.save(AccountDto.toEntity(AccountDto.from(account)));
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
 
     }
@@ -44,9 +44,13 @@ class AccountRepositoryImpl implements AccountRepository {
     @Override
     public void saveMany(List<Account> accounts) {
         try {
-            dao.saveMany(accounts.stream().map(AccountDto::from).map(AccountDto::toEntity).collect(Collectors.toList()));
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+            dao.saveMany(accounts.stream()
+                .map(AccountDto::from)
+                .map(AccountDto::toEntity)
+                .collect(Collectors.toList())
+            );
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 
@@ -54,8 +58,8 @@ class AccountRepositoryImpl implements AccountRepository {
     public void delete(Account account) {
         try {
             dao.delete(AccountDto.toEntity(AccountDto.from(account)));
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 
@@ -63,8 +67,8 @@ class AccountRepositoryImpl implements AccountRepository {
     public void update(Account account) {
         try {
             dao.update(AccountDto.toEntity(AccountDto.from(account)));
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 }

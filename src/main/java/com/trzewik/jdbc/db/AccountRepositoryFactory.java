@@ -11,15 +11,14 @@ public class AccountRepositoryFactory {
     public static AccountRepository create() {
         try {
             return new AccountRepositoryImpl(DbFactory.accountDao());
-        } catch (SQLException e) {
-            throw new AccountRepository.Exception(e);
+        } catch (SQLException ex) {
+            throw new AccountRepository.Exception(ex);
         }
     }
 
     public static AccountRepository createInMemory() {
         return new AccountRepositoryInMemoryImpl();
     }
-
 
     private static class DbFactory {
 

@@ -28,8 +28,8 @@ public interface AccountRepository {
     }
 
     class Exception extends RuntimeException {
-        public Exception(SQLException e) {
-            super(e);
+        public Exception(SQLException ex) {
+            super(ex);
         }
     }
 }
