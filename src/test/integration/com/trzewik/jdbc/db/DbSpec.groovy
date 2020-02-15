@@ -8,12 +8,14 @@ abstract class DbSpec extends Specification {
     static final String DEFAULT_SCHEMA = 'test'
     private static PostgreSQLContainer container
     private static Flyway flyway
+    protected static DbHelper dbHelper
 
     def setupSpec() {
         startContainer()
         setSystemProperties()
         setupFlyway()
         migrateDb()
+        dbHelper = new DbHelper()
     }
 
     def cleanupSpec() {

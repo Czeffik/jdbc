@@ -1,5 +1,12 @@
 package com.trzewik.jdbc;
 
+import com.trzewik.jdbc.db.AccountRepositoryFactory;
+import com.trzewik.jdbc.domain.Account;
+import com.trzewik.jdbc.domain.AccountRepository;
+import com.trzewik.jdbc.domain.AccountService;
+import com.trzewik.jdbc.domain.AccountServiceFactory;
+import com.trzewik.jdbc.raeder.FileReader;
+import com.trzewik.jdbc.raeder.FileReaderFactory;
 import com.trzewik.jdbc.ui.AccountController;
 import com.trzewik.jdbc.ui.AccountControllerFactory;
 import com.trzewik.jdbc.ui.InputProvider;
@@ -17,8 +24,17 @@ public class App {
         Arrays.stream(AccountController.Action.values()).forEach(System.out::println);
 
         InputProvider provider = InputProviderFactory.create(printer);
-        //AccountController controller = AccountControllerFactory.create(provider, printer);
-        AccountController controller = AccountControllerFactory.createWithInMemory(provider, printer);
+        FileReader<Account> reader = FileReaderFactory.createAccountCsvReader();
+
+        //Controller with real database - if want switch to in memory comment three lines bellow
+        AccountRepository repository = AccountRepositoryFactory.create();
+        AccountService service = AccountServiceFactory.create(repository, reader);
+        AccountController controller = AccountControllerFactory.create(service, provider, printer);
+
+        //Controller with in memory repository - if want switch to in memory uncomment three lines bellow
+//        AccountRepository inMemoryRepository = AccountRepositoryFactory.createInMemory();
+//        AccountService service = AccountServiceFactory.create(inMemoryRepository, reader);
+//        AccountController controller = AccountControllerFactory.create(service, provider, printer);
 
         while (true) {
             try {

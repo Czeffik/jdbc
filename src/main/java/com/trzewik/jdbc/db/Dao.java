@@ -17,5 +17,5 @@ public interface Dao<T> {
 
     void delete(T toDelete) throws SQLException;
 
-    void saveMany(List<Account> accounts) throws SQLException;
+    void saveMany(List<AccountEntity> accounts) throws SQLException;
 }

@@ -1,8 +1,8 @@
-package com.trzewik.jdbc.db
+package com.trzewik.jdbc.domain
 
 trait AccountCreation {
     Account createAccount(AccountCreator creator = new AccountCreator()) {
-        new Account(
+        new AccountImpl(
             creator.userId,
             creator.username,
             creator.email
@@ -10,7 +10,7 @@ trait AccountCreation {
     }
 
     static class AccountCreator {
-        long userId
+        long userId =  Math.abs(new Random().nextLong())
         String username = 'ADAM'
         String email = 'adam@o2.pl'
 
@@ -18,6 +18,12 @@ trait AccountCreation {
 
         AccountCreator(long userId, Account account) {
             this.userId = userId
+            this.username = account.username
+            this.email = account.email
+        }
+
+        AccountCreator(Account account) {
+            this.userId = account.userId
             this.username = account.username
             this.email = account.email
         }

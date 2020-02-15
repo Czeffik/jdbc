@@ -1,5 +1,6 @@
 package com.trzewik.jdbc.db
 
+import com.trzewik.jdbc.domain.Account
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.util.logging.Slf4j

@@ -1,12 +1,11 @@
 package com.trzewik.jdbc.ui;
 
-import com.trzewik.jdbc.db.Account;
-import com.trzewik.jdbc.db.AccountService;
+import com.trzewik.jdbc.domain.Account;
+import com.trzewik.jdbc.domain.AccountService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.io.FileNotFoundException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ public class AccountController {
     private final InputProvider provider;
     private final Printer printer;
 
-    public void doAction(Action action) throws SQLException, FileNotFoundException {
+    public void doAction(Action action) throws FileNotFoundException {
         switch (action) {
             case GET:
                 Account account = get();
@@ -56,36 +55,36 @@ public class AccountController {
         }
     }
 
-    private List<Account> getAll() throws SQLException {
-        return service.getAllAccounts();
+    private List<Account> getAll() {
+        return service.getAll();
     }
 
-    private Account get() throws SQLException {
+    private Account get() {
         long userId = provider.collectLong(TYPE_USER_ID);
-        return service.getAccountById(userId);
+        return service.getById(userId);
     }
 
-    private void create() throws SQLException {
+    private void create() {
         String username = provider.collectString(TYPE_USERNAME);
         String email = provider.collectString(TYPE_EMAIL);
-        service.createAccount(username, email);
+        service.create(username, email);
     }
 
-    private void delete() throws SQLException {
+    private void delete() {
         long userId = provider.collectLong(TYPE_USER_ID);
-        service.deleteAccount(userId);
+        service.delete(userId);
     }
 
-    private void update() throws SQLException {
+    private void update() {
         long userId = provider.collectLong(TYPE_USER_ID);
         String username = provider.collectString(TYPE_USERNAME);
         String email = provider.collectString(TYPE_EMAIL);
-        service.updateAccount(userId, username, email);
+        service.update(userId, username, email);
     }
 
-    private void createFromCsv() throws SQLException, FileNotFoundException {
+    private void createFromCsv() throws FileNotFoundException {
         String path = provider.collectString("Type path to csv file with accounts to save: ");
-        service.createAccountsFromCsv(path);
+        service.createFromCsv(path);
     }
 
     @Getter
